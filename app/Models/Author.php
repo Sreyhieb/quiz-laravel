@@ -13,4 +13,8 @@ class Author extends Model
         'age',
         'province'
     ];
+    public function book()
+    {
+        return $this->belongsTo(BooK::class);
+    }
 }

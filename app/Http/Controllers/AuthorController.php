@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\Author;
+use App\Http\Resources\AuthorResource;
 class AuthorController extends Controller
 {
     /**
@@ -14,7 +15,7 @@ class AuthorController extends Controller
     public function index()
     {
         //
-        return Author::with('user')->get();
+        return AuthorResource::collection(Author::get()->take(3));
     }
 
     /**
@@ -25,15 +26,18 @@ class AuthorController extends Controller
      */
     public function store(Request $request)
     {
-        //
+        $request->validate([
+            'name' => 'min:3|max:10',
+            'age' => 'min:1|max:10',
+            'province' => 'nullable'
+        ]);
         $author = new Author();
-        $author->name=$request->name;
-        $author->age=$request->age;
-        $author->province=$request->province;
+        $author->name = $request->name;
+        $author->age = $request->age;
+        $author->province = $request->province;
+
         $author->save();
-
-        return response()->json(['sms'=>'created!'],201);
-
+        return response()->json(['message'=>'Author Created', 'data'=> $author], 201);
     }
 
     /**
@@ -44,8 +48,7 @@ class AuthorController extends Controller
      */
     public function show($id)
     {
-        //
-        return Author::findOrFail($id);
+        return new AuthorResource(Author::findOrFail($id));
     }
 
     /**
@@ -57,16 +60,18 @@ class AuthorController extends Controller
      */
     public function update(Request $request, $id)
     {
-        //
-        $author = new Author();
-        $author->name=$request->name;
-        $author->age=$request->age;
-        $author->province=$request->province;
+        $request->validate([
+            'name'=>'min:3|max:10',
+            'age'=>'min:1|max:10',
+            'province'=>'nullable'
+        ]);
+        $author = Author::findOrFail($id);
+        $author->name = $request->name;
+        $author->age = $request->age;
+        $author->province = $request->province;
+
         $author->save();
-
-        return response()->json(['sms'=>'updated!'],200);
-
-
+        return response()->json(['massage'=>' Author Updated', 'data'=> $author], 200);
     }
 
     /**
@@ -77,13 +82,11 @@ class AuthorController extends Controller
      */
     public function destroy($id)
     {
-        //
-        $author = Author::destroy($id);
-        if($author == 1){
-            return response()->json(['message' => 'delete succesfully'], 200);
+        $isDeleted = Author::destroy($id);
+        if($isDeleted == 1){
+            return response()->json(['massage'=>' Author Deleted'], 200);
         }else{
-            return response()->json(['message' => 'cannot delete no id' ], 404);
+            return response()->json(['massage'=>'ID already exit '], 404);
         }
-
     }
 }

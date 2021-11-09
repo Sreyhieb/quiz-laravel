@@ -10,15 +10,9 @@ class Book extends Model
     use HasFactory;
     protected $fillable = [
         'title',
-        'body',
+        'body'
     ];
-    public function user()
-    {
-        return $this->belongsTo(User::class);
-    }
-    
-    public function coment()
-    {
-        return $this->hasMany(Coment::class);
+    public function author(){
+        return $this->belongsTo(Author::class);
     }
 }

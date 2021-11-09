@@ -1,8 +1,10 @@
 <?php
 
 namespace App\Http\Controllers;
-use Illuminate\Http\Request;
 use App\Models\Book;
+use App\Http\Resources\BookResource;
+use Illuminate\Http\Request;
+
 class BookController extends Controller
 {
     /**
@@ -12,8 +14,7 @@ class BookController extends Controller
      */
     public function index()
     {
-        //
-        return Book::with('user')->get();
+        return BookResource::collection(Book::latest()->get());
     }
 
     /**
@@ -24,12 +25,17 @@ class BookController extends Controller
      */
     public function store(Request $request)
     {
-        //
+        $request->validate([
+            'title' => 'min:3|max:10',
+            'body' => 'min:3|max:50'
+        ]);
         $book = new Book();
-        $book->title=$request->title;
-        $book->body=$request->body;
+        $book->author_id = $request->author_id;
+        $book->title = $request->title;
+        $book->body = $request->body;
         $book->save();
-        return response()->json(['sms'=>'created!'],201);
+
+        return response()->json(["Message" => "Book Created", "data" => $book], 201);
     }
 
     /**
@@ -40,8 +46,7 @@ class BookController extends Controller
      */
     public function show($id)
     {
-        //
-        return Books::findOrFail($id);
+        return Book::findOrFail($id);
     }
 
     /**
@@ -53,12 +58,16 @@ class BookController extends Controller
      */
     public function update(Request $request, $id)
     {
-        //
-        $book = new Book();
-        $book->title=$request->title;
-        $book->body=$request->body;
+        $request->validate([
+            'title'=>'min:3|max:10',
+            'body'=>'min:3|max:50',
+        ]);
+        $book = Book::findOrFail($id);
+        $book->title = $request->title;
+        $book->body = $request->body;
+
         $book->save();
-        return response()->json(['sms'=>'updated!'],200);
+        return response()->json(['massage'=>' Book Update', 'data'=> $book], 200);
     }
 
     /**
@@ -69,13 +78,11 @@ class BookController extends Controller
      */
     public function destroy($id)
     {
-        //
-        $book = Book::destroy($id);
-        if($book == 1){
-            return response()->json(['message' => 'delete succesfully'], 200);
+        $isDeleted = Book::destroy($id);
+        if($isDeleted == 1){
+            return response()->json(['massage'=>' Book Deleted'], 200);
         }else{
-            return response()->json(['message' => 'cannot delete no id' ], 404);
+            return response()->json(['massage'=>'ID already exit'], 404);
         }
-
     }
 }
